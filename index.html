@@ -37,6 +37,25 @@
         font-size: 45px;
         cursor:pointer;
       }
+        .header-zone {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.cool-btn {
+  background: linear-gradient(45deg, #ff0066, #6a00ff);
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 18px;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.cool-btn:hover {
+  transform: scale(1.1) rotate(1deg);
+  box-shadow: 0 0 12px rgba(255, 0, 120, 0.6);
+}
     </style>
     <script>
 
@@ -393,7 +412,10 @@
 </head>
 <body>
 
-<h1 class="pagetitle">InF Game</h1>
+<div class="header-zone">
+  <h1 class="pagetitle">InF Game</h1>
+  <button onclick="window.location.href='https://mavox-id.github.io/InF/ru/'">RU</button>
+</div>
 <div class="content" style="text-align:center;">
 
 <form id="InputForm" onsubmit="submitcombo();return false;" autocomplete="off">
@@ -494,5 +516,8 @@
 
 </div>
 
+<footer>
+  © 2025 | Mavox-ID | InF Game | All rights reserved. | EN |
+</footer>
 
 </body></html>
