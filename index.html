@@ -43,8 +43,10 @@
 }
 
 .header-zone {
-  text-align: center;
-  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
 }
 
 .lang-btn {
@@ -77,6 +79,41 @@
   border-top: 1px solid #333;
 }
 
+#confirmModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.55);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  #confirmBox {
+  background: #ffffff;
+  padding: 20px 28px;
+  border-radius: 8px;
+  max-width: 420px;
+  text-align: center;
+  font-family: sans-serif;
+  color: #000000;
+}
+  #confirmBox button {
+    margin: 10px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  #confirmYes {
+    background: #d9534f;
+    color: white;
+  }
+  #confirmNo {
+    background: #cccccc;
+  }
     </style>
     <script>
 
@@ -435,9 +472,22 @@
 
 <div class="header-zone">
   <h1 class="pagetitle">InF Game</h1>
-  <button class="lang-btn" onclick="window.location.href='https://mavox-id.github.io/InF/ru/'">RU</button>
+  <button class="lang-btn" onclick="window.location.href='https://mavox-id.github.io/InF/ru/'">RU Version</button>
+  <input type="button" value="Сбросить данные / Reset data" onclick="openConfirm();">
 </div>
 <div class="content" style="text-align:center;">
+
+<div id="confirmModal">
+  <div id="confirmBox">
+    <p><b>Вы хотите удалить все данные (куки и сохранения)?</b></p>
+    <p>Если вы переключились на другой язык, но стартовые слова не поменялись — подтвердите.</p>
+    <hr>
+    <p><b>Do you want to delete all cookies and saved data?</b></p>
+    <p>If you switched language but default elements didn’t update — confirm.</p>
+    <button id="confirmYes" onclick="resetAllData();">Подтвердить / Confirm</button>
+    <button id="confirmNo" onclick="closeConfirm();">Отмена / Cancel</button>
+  </div>
+</div>
 
 <form id="InputForm" onsubmit="submitcombo();return false;" autocomplete="off">
 <span id="Combination" style="font-size:25px;display:block;padding-bottom:20px;">loading...</span>
@@ -540,5 +590,24 @@
 <footer>
   © 2025 | Mavox-ID | InF Game | All rights reserved. | EN |
 </footer>
+
+<script>
+  function openConfirm() {
+    document.getElementById('confirmModal').style.display = 'flex';
+  }
+  function closeConfirm() {
+    document.getElementById('confirmModal').style.display = 'none';
+  }
+  function resetAllData() {
+    document.cookie.split(";").forEach(function(c) {
+      document.cookie = c.trim().split("=")[0] + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+    });
+
+    localStorage.clear();
+    sessionStorage.clear();
+
+    location.reload();
+  }
+</script>
 
 </body></html>
