@@ -12,6 +12,7 @@
     <meta name="msapplication-TileColor" content="#00ffff">
     <meta name="theme-color" content="#00ffff">
     <script src="js/scripts.js"></script>
+    <link rel="manifest" href="manifest.json">
     <style>
       .deletebutton {margin-left:5px;cursor:pointer;}
       #OptionsBox {
@@ -52,18 +53,22 @@
 .lang-btn {
   background: #222;
   color: #fff;
-  padding: 14px 28px;
-  font-size: 20px;
+  padding: 10px 22px;
+  font-size: 18px;
   border-radius: 10px;
   border: none;
   cursor: pointer;
   margin-top: 10px;
   transition: 0.3s;
+  line-height: 1;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .lang-btn:hover {
-  transform: scale(1.12);
-  background: #444;
+  transform: scale(1.05);
+  background: #333;
 }
         footer {
   position: fixed;
@@ -474,6 +479,7 @@
   <h1 class="pagetitle">InF Game</h1>
   <button class="lang-btn" onclick="window.location.href='https://mavox-id.github.io/InF/ru/'">RU Version</button>
   <input type="button" value="Сбросить данные / Reset data" onclick="openConfirm();">
+  <button class="lang-btn" id="installBtn" style="display:none;">Download offine version</button>
 </div>
 <div class="content" style="text-align:center;">
 
@@ -608,6 +614,23 @@
 
     location.reload();
   }
+</script>
+
+<script>
+  let deferredPrompt;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installBtn').style.display = 'inline-flex';
+  });
+
+  document.getElementById('installBtn').addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const result = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+  });
 </script>
 
 </body></html>
