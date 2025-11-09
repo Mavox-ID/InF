@@ -1,0 +1,550 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="description" content="Come up with an answer to endless combinations, a twist on the popular alchemy game genre.">
+    <meta name="keywords" content="InF, Mavox-ID, elements, elemental, alchemy, little alchemy">
+    <meta name="author" content="Mavox-ID">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InFGame - Mavox-ID - ru</title>
+    <script type="application/ld+json">{"@context" : "http://schema.org","@type" : "Organization","name" : "R74n","url" : "https://r74n.com","sameAs" : ["https://twitter.com/R74nCom","https://twitter.com/CopyPasteDump","https://www.youtube.com/channel/UCzS6ufDfiDxbHVL001GwFeA"], "logo":"https://r74n.com/icons/favicon.png", "email":"contact@r74n.com"}</script>
+    <link rel="stylesheet" type="text/css" href="css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="css/stylesheet.css">
+    <link rel="mask-icon" href="images/safari-pinned-tab.svg" color="#1cd2d2">
+    <meta name="msapplication-TileColor" content="#00ffff">
+    <meta name="theme-color" content="#00ffff">
+    <script src="js/scripts.js"></script>
+    <style>
+      .deletebutton {margin-left:5px;cursor:pointer;}
+      #OptionsBox {
+        position:fixed;
+        top:0px;
+        left:0px;
+        bottom:0px;
+        background-color:rgb(39, 39, 39);
+        width:100%;
+        padding-top:15px;
+        padding-bottom:15px;
+        overflow-y:auto;
+      }
+      #OptionsX::before {content:"✖"}
+      #OptionsX {
+        position:fixed;
+        top:0px;
+        right:0px;
+        height:50px;
+        width:50px;
+        padding:10px;
+        background-color:gray;
+        font-size: 45px;
+        cursor:pointer;
+      }
+        .header-zone {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.header-zone {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.lang-btn {
+  background: #222;
+  color: #fff;
+  padding: 14px 28px;
+  font-size: 20px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: 0.3s;
+}
+
+.lang-btn:hover {
+  transform: scale(1.12);
+  background: #444;
+}
+        footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+
+  background: #111;
+  color: #ccc;
+  padding: 14px 0;
+  font-size: 14px;
+  border-top: 1px solid #333;
+}
+
+    </style>
+    <script>
+
+      function savelist() {
+        var saves = JSON.parse(localStorage.getItem("saves"));
+        saves[currentsave] = {"items":itemlist,"combos":combolist,"starters":saves[currentsave]["starters"]};
+        localStorage.setItem("saves",JSON.stringify(saves));
+      }
+      function saveoptions() {
+        localStorage.setItem("options",JSON.stringify(options));
+        localStorage.setItem("currentsave",currentsave)
+      }
+      function resetsave() {
+        localStorage.removeItem("itemlist");
+        localStorage.removeItem("combolist");
+        saveoptions();
+        var starters = document.getElementById("StarterBox").value.replaceAll(", ",",").replaceAll(" ,",",").split(",");
+        localStorage.setItem("starters",starters.join(", "));
+        location.reload();
+      }
+      function updatestarterbox() {
+        document.getElementById("StarterBox").value = localStorage.getItem("starters")
+      }
+      function loadsave() {
+        var starters = localStorage.getItem("starters");
+        if (starters==null) {
+          starters = "air,earth,fire,water,life,void"
+          localStorage.setItem("starters",starters);
+        }
+        var newgame = false;
+        if (localStorage.getItem("saves")==null) {
+          currentsave = "save-1";
+          localStorage.setItem("saves",JSON.stringify({"save-1":
+            {
+            "items":starters.replaceAll(", ",",").replaceAll(" ,",",").split(","),
+            "combos":[],
+            "starters":starters.split(",")
+            } // new save
+          }));
+          var newgame = true;
+        }
+        else {
+          currentsave = localStorage.getItem("currentsave");
+          if (currentsave==null) {
+            currentsave = Object.keys(JSON.parse(localStorage.getItem("saves")))[0];
+            var newgame = true;
+          }
+        }
+        var savedata = JSON.parse(localStorage.getItem("saves"))[currentsave];
+        itemlist = savedata["items"];
+        combolist = savedata["combos"];
+        combokeys = [];
+        for (var n in combolist) {
+          var comboline = combolist[n];
+          combokeys.push(comboline.split(": ")[0])
+        }
+        if (combolist.includes("")) {
+          combolist.splice(combolist.indexOf(""), 1);
+          combokeys.splice(combokeys.indexOf(""), 1);
+        }
+        options = JSON.parse(localStorage.getItem("options"));
+        if (options==null) {
+          options = {};
+          var newgame = true;
+        }
+        defaultoptions = {"more_operators":false,"ideas":false,"meta_operators":false};
+        for (var key in defaultoptions) {
+          if (!(key in options)) {
+            value = defaultoptions[key];
+            options[key] = value
+            var newgame = true;
+          }
+        }
+
+        if (newgame) {savelist();saveoptions();}
+      }
+
+      function chooseweighted(items, chances) {
+        var sum = chances.reduce((acc, el) => acc + el, 0);
+        var acc = 0;
+        chances = chances.map(el => (acc = el + acc));
+        var rand = Math.random() * sum;
+        return items[chances.filter(el => el <= rand).length];
+      }
+      function weightedchances(items) {
+        var chances = [];
+        for (var n in items) {
+          chances.push(items.length-n)
+        }
+        return chances;
+      }
+      function choosecombo(){
+        document.getElementById("ResultInput").value = "";
+        var chances = weightedchances(itemlist);
+        var item1 = chooseweighted(itemlist,chances);//randomChoice(itemlist);
+        var item2 = chooseweighted(itemlist,chances);//randomChoice(itemlist);
+        if (!(options["more_operators"]||options["meta_operators"])) {
+          var combo = item1+" + "+item2;
+          var combo2 = item2+" + "+item1;
+          if (options["ideas"]) {var idea = randomIdea(item1,item2)}
+        }
+        else {
+          var combo0 = bettercombo(item1,item2);
+          var combo = combo0[0];
+          if (combo0.length > 1) {var combo2 = combo0[1];}
+          else {var combo2 = combo}
+          if (options["ideas"] && combo.includes(" + ")) {var idea = randomIdea(item1,item2)}
+          else {var idea = "..."}
+        }
+        if (combokeys.includes(combo)||combokeys.includes(combo2)) {
+          //console.log("AAAAA");
+          choosecombo();
+          return false;
+        }
+        else {
+          setText("Combination",combo+" = ?");
+          document.getElementById("Combination").setAttribute("combo",combo);
+        }
+        if (!(idea==null)) {
+          document.getElementById("Idea").innerHTML = idea
+        }
+      }
+
+      function simplify(text) {
+        if (!text.match(/^'+$/g)) {text=text.replace("'","")}
+        if (!text.match(/^\-+$/g)) {text=text.replace("-","")}
+        return text.toLowerCase().replace(" ","");
+      }
+      function singular(text) {
+        if (text.length < 3) {return text}
+        else if (text.endsWith("ies")) {return text.slice(0,-3)+"y"}
+        else if (text.endsWith("ses")||text.endsWith("hes")) {return text.slice(0,-2)}
+        else if (text.endsWith("s")) {return text.slice(0,-1)}
+      }
+      function plural(text) {
+        if (text.length < 3) {return text}
+        else if (text.endsWith("y") && (!text.endsWith("ey"))) {return text.slice(0,-1)+"ies"}
+        else if (text.endsWith("s")||text.endsWith("ch")||text.endsWith("sh")||text.endsWith("th")) {return text+"es"}
+        else {return text+"s"}
+      }
+      function finditem(item) {
+        var simpleitem = simplify(item);
+        var itemsing = singular(simpleitem);
+        var itempl = plural(simpleitem);
+        for (var n in itemlist) {
+          var i = itemlist[n];
+          var simplei = simplify(i);
+          if ((simplei==simpleitem)||(simplei==itemsing)||(simplei==itempl)) {return i;}
+        }
+        return item;
+      }
+      function submitcombo() {
+        var combo = document.getElementById("Combination").getAttribute("combo");
+        var ResultBox = document.getElementById("ResultInput");
+        var newitem = finditem(ResultBox.value.toLowerCase());
+        //console.log(newitem);
+        if (newitem.includes(" + ")) {alert("Items cannot contain \" + \"");}
+        else if (newitem.includes(": ")) {alert("Items cannot contain \": \"");}
+        else if (newitem.replaceAll(" ","").length == 0) {return}
+        else {
+          combolist.push(combo+": "+newitem);
+          combokeys.push(combo);
+          if (!itemlist.includes(newitem)) {
+            itemlist.push(newitem);
+          }
+          choosecombo();
+          savelist();
+          updatetext();
+          updatesaves();
+        }
+      }
+      function deletecombo(combo) {
+        combolist.splice(combolist.indexOf(combo), 1);
+        combokeys.splice(combokeys.indexOf(combo.split(": ")[0]), 1);
+        updatetext();
+      }
+      function updatetext() {
+        setText("ItemList",itemlist.join("<br>"));
+        combotext = "";
+        for (var n in combolist) {
+          combo = combolist[n];
+          combotext = combotext+combo+"<br>"//+"<a class='deletebutton' onclick='deletecombo(""+combo+"")'>x</a><br>"
+        }
+        setText("ComboList",combotext);
+      }
+      function toggle(option) {
+        options[option] = !options[option];
+        if (option == "ideas") {
+          var IdeaBox = document.getElementById("Idea");
+          if (IdeaBox.style.display === "none") {IdeaBox.style.display = "block";}
+          else {IdeaBox.style.display = "none";}
+          IdeaBox.innerHTML = "..."
+        }
+        saveoptions();
+      }
+      function updatechecks() {
+        document.getElementById("OperatorCheckbox").checked = options["more_operators"];
+        document.getElementById("MetaCheckbox").checked = options["meta_operators"];
+        document.getElementById("IdeaCheckbox").checked = options["ideas"];
+        if (options["ideas"]) {document.getElementById("Idea").style.display = "block";}
+      }
+      combotemplates = ["ITEM1 + ITEM2","ITEM1 + ITEM2","ITEM1 + ITEM2","ITEM1 + ITEM2","ITEM1 + ITEM2","ITEM1 + ITEM2","ITEM1 - ITEM2","ITEM1 × 2","ITEM1 ÷ 2","sqrt(ITEM1)","ITEM1²"];
+      metatemplates = ["category(ITEM1)","opposite(ITEM1)","beginning(ITEM1)","similar(ITEM1)"];
+      function bettercombo(item1,item2) {
+        var temps = [];
+        if (options["more_operators"]) {
+          temps = temps.concat(combotemplates)
+        }
+        if (options["meta_operators"]) {
+          temps = temps.concat(metatemplates)
+        }
+        var combotemp = randomChoice(temps);
+        var combo = combotemp.replaceAll("ITEM1",item1).replaceAll("ITEM2",item2);
+        if (combotemp.includes("ITEM2")) {
+          var combo2 = combotemp.replaceAll("ITEM1",item2).replaceAll("ITEM2",item1)
+        }
+        else {var combo2 = combo}
+        return [combo,combo2]
+      }
+      function updatesaves() {
+        var SaveSelect = document.getElementById("SaveSelect");
+        var saves = JSON.parse(localStorage.getItem("saves"));
+        var savenames = Object.keys(saves);
+        for (i = SaveSelect.options.length-1; i >= 0; i--) {
+          SaveSelect.options[i] = null;
+        }
+        for (var n in savenames) {
+          var savename = savenames[n];
+          var option = document.createElement("option");
+          option.value = savename;
+          option.text = savename+" - "+saves[savename]["combos"].length+" combos";
+          if (currentsave==savename) {
+            option.selected = true;
+          }
+          SaveSelect.appendChild(option);
+        }
+      }
+      function newsave(name=null,data=null) {
+        var saves = JSON.parse(localStorage.getItem("saves"));
+        var savenames = Object.keys(saves);
+        if (name==null) {
+          name = "save";
+          var n = 1;
+          while (savenames.includes(name+"-"+n)) {
+            n += 1;
+          }
+          name = name+"-"+n;
+          console.log(name);
+        }
+        if (!savenames.includes(name)) {
+          var starters = document.getElementById("StarterBox").value.replaceAll(", ",",").replaceAll(" ,",",").split(",");
+          if (starters.length == 1 && starters[0] == "") {
+            starters = ["air","earth","fire","water","life","void"]
+          }
+
+          localStorage.setItem("starters",starters.join(", "));
+          saveoptions();
+          if (data==null){
+            saves[name] = {
+              "items":starters,
+              "combos":[],
+              "starters":starters,
+            };
+          }
+          else {
+            if (data["starters"]==undefined) {data["starters"]=data["items"]}
+            saves[name] = data;
+          }
+          localStorage.setItem("saves",JSON.stringify(saves));
+          localStorage.setItem("currentsave",name);
+        }
+        location.reload();
+      }
+      function switchsave() {
+        var SaveSelect = document.getElementById("SaveSelect");
+        saveoptions();
+        var savename = SaveSelect.options[SaveSelect.selectedIndex].value;
+        localStorage.setItem("currentsave",savename);
+        location.reload();
+      }
+      function toggleOptions() {
+        var OptionsBox = document.getElementById("OptionsBox");
+        if (OptionsBox.style.display === "none") {OptionsBox.style.display = "block";}
+        else {OptionsBox.style.display = "none";}
+      }
+      ideatemplates = ["ITEM1 is added to ITEM2","ITEM1 hits ITEM2","ITEM1 touches ITEM2","ITEM1 fused with ITEM2","ITEM1 ITEM2?","the ITEM1 of ITEM2"];
+      function randomIdea(item1,item2) {
+        if (item2==null) {
+          return "inspiration unavailable"
+        }
+        else {
+          if (randomChoice([0,1])) {var item1temp=item1;item1=item2;item2=item1temp}
+          return "idea: "+randomChoice(ideatemplates).replaceAll("ITEM1",item1).replaceAll("ITEM2",item2)
+        }
+      }
+      function copyText(text){
+        var element = document.createElement('textarea');
+        document.body.appendChild(element);
+        element.innerHTML = text;
+        element.select();
+        document.execCommand('copy');
+        setValue("CopyButton","Copied");
+        document.body.removeChild(element);
+      }
+      function formatsave() {
+        var FormatSelect = document.getElementById("FormatSelect");
+        var format = FormatSelect.options[FormatSelect.selectedIndex].value;
+        var savedata = JSON.parse(localStorage.getItem("saves"))[currentsave];
+        if (format=="mixup") {var text = JSON.stringify(savedata)}
+        else if (format=="plaintext") {var text=itemlist.join("\n")+"\n\n"+combolist.join("\n")}
+        else if (format=="plaintextitems") {var text=itemlist.join("\n")}
+        else if (format=="plaintextcombos") {var text=combolist.join("\n")}
+        else if (format=="elem4") {
+          var text = "Title="+currentsave+"\nDescription="+combolist.length+" combinations. Imported from Mix-Up!\nVersion=1.0\n\n#Imported from a Mix-Up! game, more specifically \""+currentsave+"\"\n#r74n.com/mix\n\nDefault: #ffffff";
+          for (var n in savedata["starters"]) {
+            var item = savedata["starters"][n];
+            text += "\n"+item+" (Default)";
+          }
+          for (var n in savedata["combos"]) {
+            var combo = savedata["combos"][n];
+            if (combo.includes(" + ")) {text += "\n"+combo.replaceAll(": "," = ")+" (Default)";}
+          }
+        }
+        else if (format=="csv") {
+          var text = '"Combination","Result"'
+          for (var n in savedata["combos"]) {
+            var combo = savedata["combos"][n];
+            text += '\n"'+combo.split(": ")[0]+'","'+combo.split(": ")[1]+'"';
+          }
+        }
+
+        return text
+      }
+      function importsave() {
+        var ImportText = document.getElementById("ImportText");
+        try {var savedata = JSON.parse(ImportText.value);}
+        catch(err) {alert("Your save data is malformed!\n\n"+err.message);return false}
+        if (!savedata.contructor == Object) {alert("Your save data must be a JSON dictionary!");return false}
+        if (savedata["items"]==undefined) {savedata["items"]=["corrupted save"]}
+        if (savedata["combos"]==undefined) {savedata["combos"]=[]}
+        newsave(null,savedata);
+
+
+      }
+
+
+
+
+      loadsave();
+    </script>
+
+    <script src="js/load.js"></script>
+
+</head>
+<body>
+
+<div class="header-zone">
+  <h1 class="pagetitle">InF Game RU</h1>
+  <button class="lang-btn" onclick="window.location.href='https://mavox-id.github.io/InF/'">EN</button>
+</div>
+<div class="content" style="text-align:center;">
+
+<form id="InputForm" onsubmit="submitcombo();return false;" autocomplete="off">
+<span id="Combination" style="font-size:25px;display:block;padding-bottom:20px;">загрузка...</span>
+<span id="Idea" style="display:none;font-size:20px;margin-bottom:20px;font-style:italic">вдохновение недоступно</span>
+<input id="ResultInput" type="text" autofocus="" style="text-align:center;" placeholder="Введите результат" title="Введите результат вышеуказанной комбинации.">
+
+</form>
+<input type="button" onclick="toggleOptions();return false" value="Show Options" style="margin-top:20px">
+<span id="ItemList" style="display:block;padding:20px;"></span>
+<span id="ComboList" style="display:block;padding-bottom:20px;"></span>
+
+<div id="OptionsBox" style="display:none">
+
+  <div id="OptionsX" onclick="toggleOptions();return false"></div>
+
+  <h3>Options</h3>
+  <input class="checkbox" id="OperatorCheckbox" type="checkbox" value="" onclick="toggle('more_operators');">
+  <label for="OperatorCheckbox">Больше операторов</label>
+  <br>
+  <input class="checkbox" id="MetaCheckbox" type="checkbox" value="" onclick="toggle('meta_operators');">
+  <label for="MetaCheckbox">Мета-операторы</label>
+  <br>
+  <input class="checkbox" id="IdeaCheckbox" type="checkbox" value="" onclick="toggle('ideas');">
+  <label for="IdeaCheckbox">Показать вдохновение</label>
+  
+  <hr>
+  
+  <h4>Сохранения</h4>
+  <label for="SaveSelect">Выберите Сохранить</label>
+  <select id="SaveSelect" onchange="switchsave();"></select>
+  <br><br>
+  <input type="button" value="Сбросить сохранение" id="ResetButton" onclick="resetsave();" style="display:inline-block;padding-bottom:20px;background-color:red">
+  <input type="text" id="StarterBox" placeholder="Введите стартеры здесь" title="Разделяйте слова запятыми.">
+  <input type="button" value="Новое Сохранить" id="NewSaveButton" onclick="newsave();" style="display:inline-block;background-color:blue;">
+  <br><br>
+  <label for="SaveSelect">Стартовые пресеты</label>
+  <select id="PresetSelect" onchange="document.getElementById('StarterBox').value = getSelected('PresetSelect').value">
+    <option selected disabled hidden>Подобранные пресеты</option>
+<option value="воздух,земля,огонь,вода,жизнь,пустота">InF по умолчанию</option>
+<option value="огонь,вода,воздух,жизнь,грязь,пустота,электричество,растение,металл,камень">InF десятикратный</option>
+<option value="воздух,земля,огонь,вода,холод,жизнь,свет,пустота,космос,время,эфир,магия,металл,энергия,энтропия,дух,природа,человек,звук,смерть,существо,электричество,буква,число">Смешение! Великие 24</option>
+<option value="воздух,земля,огонь,вода">Классические 4</option>
+<option value="воздух,земля,огонь,ветер">Классические 4 (ветер)</option>
+<option value="воздух,земля,огонь,вода,эфир">Классические 5 (эфир)</option>
+<option value="земля,огонь,металл,вода,дерево">Китайские классические</option>
+<option value="дуальность,энергия,иллюзия,свет,душа,пустота">Неземные</option>
+
+<option value="хлеб,говядина,давление,огонь,овощ,помидор,сыр,молоко,яйцо,яблоко,сахар,вода">Кулинария</option>
+<option value="яйцо,время,эволюция,растение,вода,суша,смерть">Жизнь</option>
+<option value="песок,вода,ракушка,водоросли,камень,палка,улитка">Пляжный отдых</option>
+<option value="зрение,слух,осязание,вкус,обоняние">Органы чувств</option>
+<option value="земля,ветер,огонь">Сентябрь</option>
+
+<optgroup label="Другие игры / серии">
+  <option value="воздух,огонь,земля,вода">Doodle Alchemy</option>
+  <option value="зверь,воздух,земля,огонь,вода,свет,порядок,человек,яблоко">Doodle Devil</option>
+  <option value="яйцо,червь,мышь,килька">Doodle Farm</option>
+  <option value="жизнь,магия,небо,горы,равнины">Doodle Kingdom</option>
+  <option value="здание,преступление,металлический_прут,человек,кошелёк">Doodle Mafia</option>
+
+  <option value="огонь,вода,трава,электричество,лёд,бой,яд,грунт,летающий,психический,жук,камень,призрак,тьма,дракон,сталь,фея">Типы покемонов</option>
+
+  <option value="анемо,гео,электро,дендро,гидро,пиро,крио">Геншин импакт</option>
+  <option value="земля,огонь,молния,лёд">Ниндзяго</option>
+  <option value="огонь,вода,снег">Кард-джитсу</option>
+</optgroup>
+
+    </optgroup>
+  </select>
+
+  <hr>
+  <h4>Експорт</h4>
+  <div style="display:inline-block">
+  <label for="FormatSelect">Выберите формат</label>
+  <select id="FormatSelect">
+    <option selected="" value="mixup">InF Сохранить</option>
+    <option value="plaintext">Обычный текст</option>
+    <option value="plaintextitems">Обычный текст (элементы)</option>
+    <option value="plaintextcombos">Обычный текст (комбо)</option>
+    <option value="elem4">Набор из 4 элементов</option>
+    <option value="csv">CSV</option>
+  </select></div>
+  <div style="display:inline-block">
+  <input type="button" value="Скачать" id="DownloadButton" onclick="downloadFile(currentsave,formatsave());return false">
+  <input type="button" value="Скопировать" id="CopyButton" onclick="copyText(formatsave());return false">
+  </div>
+
+  <hr>
+  <h4>Импорт</h4>
+  Импортировать сохранения можно только в формате InF.
+  <br><br>
+  <input type="text" placeholder="Paste save data" id="ImportText">
+  <input type="button" value="Импорт" id="ImportButton" onclick="importsave();return false" style="background-color:blue">
+  
+
+</div>
+
+
+
+
+<script>updatetext();updatechecks();choosecombo();updatestarterbox();updatesaves();
+</script>
+
+</div>
+
+<footer>
+  © 2025 | Mavox-ID | InF Game | Все права защищены. | RU |
+</footer>
+
+</body></html>
