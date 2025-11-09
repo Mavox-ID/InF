@@ -1,5 +1,5 @@
 # InFGame 🎮✨  
-**© Mavox-ID® — All Rights Reserved**
+**© Mavox-ID — All Rights Reserved**
 
 > A playful fusion game where elements collide, misbehave, and whisper absurd poetry.  
 > Designed for travel, boredom, hallway-waiting, late-night brain fog, and those “I don’t want to scroll anymore” moments.
@@ -112,7 +112,7 @@ This project reflects:
 ---
 
 ## 🔒 Rights & Usage
-**© Mavox-ID® — All Rights Reserved**
+**© Mavox-ID — All Rights Reserved**
 
 You **may**:
 - play the game
